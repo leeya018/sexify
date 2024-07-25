@@ -4,6 +4,11 @@
 import React, { useState } from "react";
 import { auth } from "../../../firebaseConfig";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import addUser from "@/utils/addUser";
+import messageStore from "@/stores/messageStore";
+import { observer } from "mobx-react-lite";
+import Message from "@/components/Message";
+import Link from "next/link";
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -19,9 +24,12 @@ const SignUp: React.FC = () => {
         password
       );
       console.log(result.user);
+      if (!result.user) throw new Error("cannon cerate a new user ");
       // You can add additional logic here after signup
-    } catch (error: any) {
-      setError(error.message);
+      await addUser(result.user);
+      messageStore.setSuccessMessage("Signup successful!");
+    } catch (error) {
+      messageStore.setErrorMessage(error.message);
     }
   };
 
@@ -72,9 +80,18 @@ const SignUp: React.FC = () => {
             </button>
           </div>
         </form>
+        <Link href={"/auth/login"}>
+          <div className="text-blue-500 underline flex justify-center mt-5">
+            To Login
+          </div>
+        </Link>
+      </div>
+
+      <div className="">
+        <Message />
       </div>
     </div>
   );
 };
 
-export default SignUp;
+export default observer(SignUp);
