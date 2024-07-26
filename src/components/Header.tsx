@@ -43,6 +43,13 @@ const Header: React.FC = () => {
                   </span>
                 </Link>
               </li>
+              <li>
+                <Link href="/settings">
+                  <span className={isActive("/settings") ? "underline" : ""}>
+                    Settings
+                  </span>
+                </Link>
+              </li>
             </ul>
           </nav>
         )}
