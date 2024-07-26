@@ -5,6 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { observer } from "mobx-react-lite";
 import userStore from "@/stores/userStore";
+import Header from "./Header";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -34,6 +35,12 @@ const ProtectedRoute: FC<ProtectedRouteProps> = observer(({ children }) => {
   if (isLoading) {
     return <div>Loading ....</div>;
   }
-  return isAuthenticated ? <div>{children}</div> : null;
+  return isAuthenticated ? (
+    <div>
+      <Header />
+
+      {children}
+    </div>
+  ) : null;
 });
 export default ProtectedRoute;
