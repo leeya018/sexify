@@ -10,7 +10,7 @@ import { observer } from "mobx-react-lite";
 import getUsers from "@/utils/getUsers";
 import userStore from "@/stores/userStore";
 import messageStore from "@/stores/messageStore";
-import { GeoPoint } from "firebase/firestore";
+import { DocumentSnapshot, GeoPoint } from "firebase/firestore";
 import Message from "@/components/Message";
 import UserProfile from "@/components/UserProfile";
 import { IoIosArrowBack } from "react-icons/io";
@@ -21,12 +21,13 @@ const SearchPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [userInd, setUserInd] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [lastVisDoc, setLastVisDoc] = useState<DocumentSnapshot | null>(null);
 
   useEffect(() => {
-    if (userStore.user) {
+    if (userInd === users.length && userStore.user) {
       fetchUsers();
     }
-  }, [userStore?.user]);
+  }, [userInd, userStore?.user]);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -34,13 +35,17 @@ const SearchPage = () => {
     if (!location) throw new Error("location of user not defiend");
     try {
       if (!userStore.user) throw new Error("missing user");
-      const fetchedUsers = await getUsers(
+      const { users, lastVisible } = await getUsers(
+        lastVisDoc,
+        2,
         userStore.user.userId,
         location,
         radius
       );
-      setUsers(fetchedUsers);
-      console.log(JSON.stringify(fetchedUsers, null, 2));
+      setLastVisDoc(lastVisible);
+      setUsers(users);
+      setUserInd(0);
+      console.log(JSON.stringify(users, null, 2));
 
       messageStore.setSuccessMessage("Profile updated successfully!");
     } catch (error) {

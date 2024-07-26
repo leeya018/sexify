@@ -5,6 +5,9 @@ import {
   getDocs,
   query,
   where,
+  DocumentSnapshot,
+  startAfter,
+  limit,
 } from "firebase/firestore";
 import { User } from "@/types/User"; // Adjust the path to your User type
 import { db } from "@/firebaseConfig";
@@ -30,12 +33,25 @@ const haversineDistance = (
 };
 
 const getUsers = async (
+  lastDoc: DocumentSnapshot | null,
+  batchSize: number = 2,
   userId: string,
   userLocation: GeoPoint,
   radius: number
-): Promise<User[]> => {
+): Promise<{ users: User[]; lastVisible: DocumentSnapshot | null }> => {
   const usersCollection = collection(db, "users");
-  const q = query(usersCollection, where("userId", "!=", userId));
+  let q;
+  if (lastDoc) {
+    q = query(
+      usersCollection,
+      where("userId", "!=", userId),
+      startAfter(lastDoc),
+      limit(batchSize)
+    );
+  } else {
+    q = query(usersCollection, where("userId", "!=", userId), limit(batchSize));
+  }
+
   const querySnapshot = await getDocs(q);
 
   const fetchedUsers: User[] = [];
@@ -51,8 +67,11 @@ const getUsers = async (
       }
     }
   });
-
-  return fetchedUsers;
+  const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+  return {
+    users: fetchedUsers,
+    lastVisible: querySnapshot.docs.length === batchSize ? lastVisible : null,
+  };
 };
 
 export default getUsers;
