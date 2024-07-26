@@ -9,8 +9,8 @@ const updateUser = async (user: User, location: any): Promise<User> => {
 
   await updateDoc(doc(db, "users", user.userId), {
     name: user.name,
-    age: user.name,
-    photoUrl: user.name,
+    age: user.age,
+    photoUrl: user.photoUrl,
     location,
     gender: user.gender,
     preferences: user.preferences,
